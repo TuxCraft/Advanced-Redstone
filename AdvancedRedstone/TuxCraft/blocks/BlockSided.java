@@ -168,6 +168,6 @@ public class BlockSided extends ModBlock
     @Override
     public int getRenderType()
     {
-        return ClientProxy.sidedBlockType;
+        return ClientProxy.typeBlockSided;
     }
 }

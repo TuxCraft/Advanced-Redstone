@@ -72,13 +72,13 @@ public class AdvancedRedstoneCore
         advPiston = new BlockAdvancedPiston(252, "advPiston", false);
         GameRegistry.registerBlock(advPiston, "advPiston");
         
-        advPistonSticky = new BlockAdvancedPiston(255, "advPistonSticky", true);
+        advPistonSticky = new BlockAdvancedPiston(253, "advPistonSticky", true);
         GameRegistry.registerBlock(advPistonSticky, "advPistonSticky");
 
-        advPistonExtension = new BlockAdvancedPistonExtension(253, "advPistonExtension", false);
+        advPistonExtension = new BlockAdvancedPistonExtension(254, "advPistonExtension", false);
         GameRegistry.registerBlock(advPistonExtension, "advPistonExtension");
 
-        pipeBasic = new BlockPipe(254, "pipeBasic");
+        pipeBasic = new BlockPipe(255, "pipeBasic");
         GameRegistry.registerBlock(pipeBasic, "pipeBasic");
 
         EntityRegistry.registerModEntity(EntityMovingBlock.class, "movingBlock", idBaseEntity + 1, instance, 128, 1, true);

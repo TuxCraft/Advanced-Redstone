@@ -6,51 +6,56 @@ import java.util.List;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import AdvancedRedstone.TuxCraft.AdvancedRedstoneCore;
 import AdvancedRedstone.TuxCraft.Assets;
 import AdvancedRedstone.TuxCraft.Vector;
 import AdvancedRedstone.TuxCraft.WorldBlock;
 import AdvancedRedstone.TuxCraft.blocks.BlockSided;
+import AdvancedRedstone.TuxCraft.client.ClientProxy;
 import AdvancedRedstone.TuxCraft.entity.EntityMovingBlock;
 
 public class BlockAdvancedPiston extends BlockSided
 {
 
-    private boolean sticky;
+    public static int pistonStrength = 48;
+    public static int time           = 20;
+    private boolean   sticky;
 
     public BlockAdvancedPiston(int id, String s, boolean isSticky)
     {
         super(id, Material.piston, s);
-        this.setCreativeTab(CreativeTabs.tabRedstone);
+        this.setCreativeTab(CreativeTabs.tabAllSearch);
         this.setStepSound(soundStoneFootstep);
         this.setHardness(0.5F);
         this.sticky = isSticky;
     }
 
-    /**public void onNeighborBlockChange(World world, int x, int y, int z, int blockID)
-    {   
-        world.scheduleBlockUpdate(x, y, z, this.blockID, this.tickRate(world));
-    }*/
-    
+    /**
+     * public void onNeighborBlockChange(World world, int x, int y, int z, int blockID)
+     * {
+     * world.scheduleBlockUpdate(x, y, z, this.blockID, this.tickRate(world));
+     * }
+     */
+
     public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float offsetX, float offsetY, float offsetZ)
     {
-        if(player.inventory.getCurrentItem() == null)
+        if (player.inventory.getCurrentItem() == null)
         {
             Vector thisBlock = new Vector(world, x, y, z);
-            Vector extTarget = Assets.getTarget(thisBlock);
-            
-            if(extTarget.getBlockID() == AdvancedRedstoneCore.advPistonExtension.blockID)
+
+            if (this.isPistonExtended(thisBlock))
             {
                 this.retractPiston(world, x, y, z);
             }
-            
+
             else
             {
                 this.extendPiston(world, x, y, z);
             }
         }
-        
+
         return true;
     }
 
@@ -58,67 +63,70 @@ public class BlockAdvancedPiston extends BlockSided
     {
         Vector thisBlock = new Vector(world, x, y, z);
         int[] dirArray = Assets.getDirectionArray(thisBlock.getMeta());
-        
-        List<Vector> targets = getVectorsInARow(thisBlock, 100);
-        
+
         Vector extTarget = Assets.getTarget(thisBlock);
-        WorldBlock extBlock = new WorldBlock(AdvancedRedstoneCore.advPistonExtension, thisBlock.getMeta());
-        
-        Assets.setVectorToAir(extTarget);
-        EntityMovingBlock extMovingBlock = new EntityMovingBlock(world, extTarget, thisBlock, extBlock, 20, false);
-        world.spawnEntityInWorld(extMovingBlock);
-        
-        if(this.sticky)
+
+        List<Vector> targets = getVectorsInARow(extTarget, pistonStrength);
+
+        if (this.sticky)
         {
-            for(int i = 0; i < targets.size(); i++)
-            {   
+            for (int i = 0; i < targets.size(); i++)
+            {
                 Vector target = targets.get(i);
                 WorldBlock block = Assets.getWorldBlock(target);
-                
-                if(!target.isAirBlock())
+
+                if (!target.isAirBlock())
                 {
-                    EntityMovingBlock movingBlock = new EntityMovingBlock(world, target, target.plus(-dirArray[0], -dirArray[1], -dirArray[2]), block, 20, true);
+                    EntityMovingBlock movingBlock = new EntityMovingBlock(world, target, target.plus(-dirArray[0], -dirArray[1], -dirArray[2]), block, time, true);
                     world.spawnEntityInWorld(movingBlock);
-                    
+
                     world.removeBlockTileEntity(target.getX(), target.getY(), target.getZ());
-                    
-                    Assets.setVectorToAir(target);
+
+                    if (target != extTarget)
+                    {
+                        Assets.setVectorToAir(target);
+                    }
                 }
-            } 
+            }
         }
-        
+
+        Assets.setVectorToAir(extTarget);
     }
 
     private void extendPiston(World world, int x, int y, int z)
     {
         Vector thisBlock = new Vector(world, x, y, z);
         int[] dirArray = Assets.getDirectionArray(thisBlock.getMeta());
-        
-        List<Vector> targets = getVectorsInARow(thisBlock, 48);
-        
+
+        List<Vector> targets = getVectorsInARow(thisBlock, pistonStrength);
+
+        if (targets.size() == pistonStrength)
+        {
+            return;
+        }
+
         Vector extTarget = Assets.getTarget(thisBlock);
         WorldBlock extBlock = new WorldBlock(AdvancedRedstoneCore.advPistonExtension, thisBlock.getMeta());
-        
-        EntityMovingBlock extMovingBlock = new EntityMovingBlock(world, thisBlock, extTarget, extBlock, 20, true);
-        world.spawnEntityInWorld(extMovingBlock);
-        
-        for(int i = 0; i < targets.size(); i++)
-        {   
+
+        for (int i = 0; i < targets.size(); i++)
+        {
             Vector target = targets.get(i);
             WorldBlock block = Assets.getWorldBlock(target);
-            
-            if(!target.isAirBlock())
+
+            if (!target.isAirBlock())
             {
-                EntityMovingBlock movingBlock = new EntityMovingBlock(world, target, target.plus(dirArray[0], dirArray[1], dirArray[2]), block, 20, true);
+                EntityMovingBlock movingBlock = new EntityMovingBlock(world, target, target.plus(dirArray[0], dirArray[1], dirArray[2]), block, time, true);
                 world.spawnEntityInWorld(movingBlock);
-                
+
                 world.removeBlockTileEntity(target.getX(), target.getY(), target.getZ());
-                
+
                 Assets.setVectorToAir(target);
             }
         }
+
+        Assets.setWorldBlock(extBlock, extTarget);
     }
-    
+
     public static List<Vector> getVectorsInARow(Vector originalVec, int length)
     {
         World world = originalVec.getWorld();
@@ -138,12 +146,12 @@ public class BlockAdvancedPiston extends BlockSided
             z += dirArray[2];
 
             Vector vec = new Vector(world, x, y, z);
-            
-            if(vec.isAirBlock())
+
+            if (vec.isAirBlock())
             {
                 return vectorList;
             }
-            
+
             vectorList.add(vec);
         }
 
@@ -153,6 +161,64 @@ public class BlockAdvancedPiston extends BlockSided
     public static int getOrientation(int par0)
     {
         return par0 & 7;
+    }
+
+    public int getRenderType()
+    {
+        return ClientProxy.typeAdvancedPiston;
+    }
+
+    public boolean isOpaqueCube()
+    {
+        return false;
+    }
+
+    /**
+     * public void setBlockBoundsBasedOnState(Vector thisBlock)
+     * {
+     * int l = thisBlock.getMeta();
+     * if (this.isPistonExtended(thisBlock))
+     * {
+     * float f = 0.25F;
+     * switch (getOrientation(l))
+     * {
+     * case 0:
+     * this.setBlockBounds(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F);
+     * break;
+     * case 1:
+     * this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 0.75F, 1.0F);
+     * break;
+     * case 2:
+     * this.setBlockBounds(0.0F, 0.0F, 0.25F, 1.0F, 1.0F, 1.0F);
+     * break;
+     * case 3:
+     * this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.75F);
+     * break;
+     * case 4:
+     * this.setBlockBounds(0.25F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+     * break;
+     * case 5:
+     * this.setBlockBounds(0.0F, 0.0F, 0.0F, 0.75F, 1.0F, 1.0F);
+     * }
+     * }
+     * else
+     * {
+     * this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+     * }
+     * }
+     */
+
+    public static boolean isPistonExtended(Vector thisBlock)
+    {
+        World world = thisBlock.getWorld();
+        Vector extTarget = Assets.getTarget(thisBlock);
+
+        if (extTarget.getBlockID() == AdvancedRedstoneCore.advPistonExtension.blockID)
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }

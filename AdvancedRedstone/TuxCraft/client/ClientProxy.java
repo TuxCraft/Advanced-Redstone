@@ -1,8 +1,9 @@
 package AdvancedRedstone.TuxCraft.client;
 
 import AdvancedRedstone.TuxCraft.CommonProxy;
-import AdvancedRedstone.TuxCraft.client.render.block.PipeBasicRenderer;
-import AdvancedRedstone.TuxCraft.client.render.block.SidedBlockRenderer;
+import AdvancedRedstone.TuxCraft.client.render.block.RenderAdvancedPiston;
+import AdvancedRedstone.TuxCraft.client.render.block.RenderPipeBasic;
+import AdvancedRedstone.TuxCraft.client.render.block.RenderSidedBlock;
 import AdvancedRedstone.TuxCraft.entity.EntityMovingBlock;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 
@@ -15,19 +16,23 @@ public class ClientProxy extends CommonProxy
 
     }
 
-    public static int sidedBlockType;
-    public static int pipeBasicType;
+    public static int typeBlockSided;
+    public static int typePipeBasic;
+    public static int typeAdvancedPiston;
 
     @Override
     public void registerRenderers()
     {
         RenderingRegistry.registerEntityRenderingHandler(EntityMovingBlock.class, new RenderMovingBlock());
+         
+        typeBlockSided = RenderingRegistry.getNextAvailableRenderId();
+        RenderingRegistry.registerBlockHandler(new RenderSidedBlock());
         
-        sidedBlockType = RenderingRegistry.getNextAvailableRenderId();
-        RenderingRegistry.registerBlockHandler(new SidedBlockRenderer());
+        typePipeBasic = RenderingRegistry.getNextAvailableRenderId();
+        RenderingRegistry.registerBlockHandler(new RenderPipeBasic());
         
-        pipeBasicType = RenderingRegistry.getNextAvailableRenderId();
-        RenderingRegistry.registerBlockHandler(new PipeBasicRenderer());
+        typeAdvancedPiston = RenderingRegistry.getNextAvailableRenderId();
+        RenderingRegistry.registerBlockHandler(new RenderAdvancedPiston());
     }
 
 }

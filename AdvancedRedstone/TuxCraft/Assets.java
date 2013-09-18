@@ -3,14 +3,15 @@ package AdvancedRedstone.TuxCraft;
 import java.util.ArrayList;
 import java.util.List;
 
-import AdvancedRedstone.TuxCraft.entity.EntityMovingBlock;
-
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import AdvancedRedstone.TuxCraft.blocks.pipes.BlockPipe;
+import AdvancedRedstone.TuxCraft.blocks.pipes.IPipe;
+import AdvancedRedstone.TuxCraft.blocks.pipes.IPipeInteractor;
 
 public class Assets
 {
@@ -44,7 +45,7 @@ public class Assets
     public static boolean setWorldBlock(WorldBlock blockToSet, Vector vec)
     {
         World world = vec.getWorld();
-        
+
         if (world.isAirBlock(vec.getX(), vec.getY(), vec.getZ()))
         {
             world.setBlock(vec.getX(), vec.getY(), vec.getZ(), blockToSet.getBlockID());
@@ -108,37 +109,43 @@ public class Assets
             entity.worldObj.spawnParticle(s, entity.posX + parX, entity.posY + parY + yOffset, entity.posZ + parZ, 0.0D, 0.0D, 0.0D);
         }
     }
-    
+
     public static WorldBlock getWorldBlock(Vector vec)
     {
         return new WorldBlock(vec.getBlock(), vec.getTile(), vec.getMeta());
     }
-    
+
+    // Meta: 1
     public static Vector getVecUp(Vector vec)
     {
         return vec.plus(0, 1, 0);
     }
-    
+
+    // Meta: 0
     public static Vector getVecDown(Vector vec)
     {
         return vec.plus(0, -1, 0);
     }
-    
+
+    // Meta: 2
     public static Vector getVecNorth(Vector vec)
     {
         return vec.plus(0, 0, -1);
     }
-    
+
+    // Meta: 3
     public static Vector getVecSouth(Vector vec)
     {
         return vec.plus(0, 0, 1);
     }
-    
+
+    // Meta: 5
     public static Vector getVecEast(Vector vec)
     {
         return vec.plus(1, 0, 0);
     }
-    
+
+    // Meta: 4
     public static Vector getVecWest(Vector vec)
     {
         return vec.plus(-1, 0, 0);
@@ -369,6 +376,48 @@ public class Assets
 
     // ========== Entity ==========
 
+    public static Vector getEntityVec(Entity entity)
+    {
+        return new Vector(entity.worldObj, (int) entity.posX, (int) entity.posY, (int) entity.posZ);
+    }
+
+    public static void moveEntityTowards(Entity entity, double targetX, double targetY, double targetZ, double time)
+    {
+        boolean xAlign = (int) entity.posX == (int) targetX;
+        boolean yAlign = (int) entity.posY == (int) targetY;
+        boolean zAlign = (int) entity.posZ == (int) targetZ;
+
+        if (!xAlign && targetX != 0)
+        {
+            double distance = Math.abs(entity.prevPosX - targetX);
+            double speed = distance / time;
+
+            int direction = (entity.posX < targetX) ? 1 : -1;
+
+            entity.motionX = speed * direction;
+        }
+
+        if (!yAlign && targetY != 0)
+        {
+            double distance = Math.abs(entity.prevPosY - targetY);
+            double speed = distance / time;
+
+            int direction = (entity.posY < targetY) ? 1 : -1;
+
+            entity.motionY = speed * direction;
+        }
+
+        if (!zAlign && targetZ != 0)
+        {
+            double distance = Math.abs(entity.prevPosZ - targetZ);
+            double speed = distance / time;
+
+            int direction = (entity.posZ < targetZ) ? 1 : -1;
+
+            entity.motionZ = speed * direction;
+        }
+    }
+
     // ========== Prints ==========
 
     /**
@@ -400,8 +449,25 @@ public class Assets
 
         print(s);
     }
-    
+
     public static void printArray(Object[] obj)
+    {
+        String s = "";
+
+        for (int i = 0; i < obj.length; i++)
+        {
+            s = s + obj[i];
+
+            if (i != obj.length - 1)
+            {
+                s = s + " -- ";
+            }
+        }
+
+        print(s);
+    }
+    
+    public static void printArray(int[] obj)
     {
         String s = "";
 
@@ -424,10 +490,79 @@ public class Assets
      * @param y
      * @param z
      */
-    public static void printCoords(int x, int y, int z)
+    public static void printCoords(Object x, Object y, Object z)
     {
         String s = " x: " + x + "  y: " + y + "  z: " + z;
 
         print(s);
     }
+
+    // ========== Misc ==========
+
+    public static boolean canPipeConnectTo(Vector vec)
+    {
+        if (vec.getBlock() instanceof BlockPipe)
+        {
+            return true;
+        }
+
+        if (vec.getTile() != null && vec.getTile() instanceof IInventory)
+        {
+            return true;
+        }
+
+        if (vec.getBlock() instanceof IPipeInteractor)
+        {
+            return true;
+        }
+
+        if (vec.getBlock() instanceof IPipe)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static int getGreatest(int[] arr)
+    {
+        int greatest = 0;
+
+        for (int i = 0; i < arr.length; i++)
+        {
+            if (arr[i] > greatest)
+            {
+                greatest = arr[i];
+            }
+        }
+
+        return greatest;
+    }
+
+    public static double getGreatest(double[] arr)
+    {
+        double greatest = 0;
+
+        for (int i = 0; i < arr.length; i++)
+        {
+            if (arr[i] > greatest)
+            {
+                greatest = arr[i];
+            }
+        }
+
+        return greatest;
+    }
+
+    public static double round(double value, int places)
+    {
+        if (places < 0)
+            throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
+    }
+
 }

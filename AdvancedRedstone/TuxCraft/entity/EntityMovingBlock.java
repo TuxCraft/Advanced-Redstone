@@ -34,6 +34,7 @@ public class EntityMovingBlock extends Entity
         super(world);
         this.shouldDropItem = true;
         this.renderDistanceWeight = 0.0D;
+        this.noClip = true;
     }
 
     public EntityMovingBlock(World world, Vector spawn, Vector target, WorldBlock block, double speed, boolean setBlock)
@@ -77,6 +78,8 @@ public class EntityMovingBlock extends Entity
 
         this.time = d;
         this.ticksExisted = time;
+        
+        this.noClip = true;
     }
 
     protected boolean canTriggerWalking()
@@ -95,41 +98,9 @@ public class EntityMovingBlock extends Entity
 
     public void onUpdate()
     {
-        boolean xAlign = (int) this.posX == (int) this.targetX;
-        boolean yAlign = (int) this.posY == (int) this.targetY;
-        boolean zAlign = (int) this.posZ == (int) this.targetZ;
-
         this.ticksExisted--;
-
-        if (!xAlign && this.targetX != 0)
-        {
-            double distance = Math.abs(this.prevPosX - this.targetX);
-            double speed = distance / this.time;
-
-            int direction = (this.posX < this.targetX) ? 1 : -1;
-
-            this.motionX = speed * direction;
-        }
-
-        if (!yAlign && this.targetY != 0)
-        {
-            double distance = Math.abs(this.prevPosY - this.targetY);
-            double speed = distance / this.time;
-
-            int direction = (this.posY < this.targetY) ? 1 : -1;
-
-            this.motionY = speed * direction;
-        }
-
-        if (!zAlign && this.targetZ != 0)
-        {
-            double distance = Math.abs(this.prevPosZ - this.targetZ);
-            double speed = distance / this.time;
-
-            int direction = (this.posZ < this.targetZ) ? 1 : -1;
-
-            this.motionZ = speed * direction;
-        }
+        
+        Assets.moveEntityTowards(this, targetX, targetY, targetZ, time);
 
         if (this.ticksExisted == 0)
         {

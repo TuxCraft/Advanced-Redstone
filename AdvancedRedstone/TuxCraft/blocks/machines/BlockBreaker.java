@@ -6,21 +6,16 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.renderer.texture.IconRegister;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
-import AdvancedRedstone.TuxCraft.AdvancedRedstoneCore;
 import AdvancedRedstone.TuxCraft.Assets;
 import AdvancedRedstone.TuxCraft.Vector;
 import AdvancedRedstone.TuxCraft.blocks.BlockSided;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import AdvancedRedstone.TuxCraft.blocks.pipes.IPipeInteractor;
 
-public class BlockBreaker extends BlockSided
+public class BlockBreaker extends BlockSided implements IPipeInteractor
 {
 
     public BlockBreaker(int id, String s)
@@ -117,5 +112,11 @@ public class BlockBreaker extends BlockSided
                 world.destroyBlock(target.getX(), target.getY(), target.getZ(), true);
             }
         }
+    }
+
+    @Override
+    public boolean connectsOnSide(Vector block, Vector pipe, int side)
+    {
+        return true;
     }
 }
