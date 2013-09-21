@@ -12,6 +12,7 @@ import AdvancedRedstone.TuxCraft.blocks.machines.BlockBreaker;
 import AdvancedRedstone.TuxCraft.blocks.machines.BlockPlacer;
 import AdvancedRedstone.TuxCraft.blocks.materials.MaterialMachine;
 import AdvancedRedstone.TuxCraft.blocks.pipes.BlockPipe;
+import AdvancedRedstone.TuxCraft.blocks.pipes.BlockPipeSpeed;
 import AdvancedRedstone.TuxCraft.blocks.tileEntity.TileEntityBlockPlacer;
 import AdvancedRedstone.TuxCraft.entity.EntityMovingBlock;
 import cpw.mods.fml.common.Mod;
@@ -47,6 +48,7 @@ public class AdvancedRedstoneCore
     public static Block                advPistonSticky;
     public static Block                advPistonExtension;
     public static Block                pipeBasic;
+    public static Block                pipeSpeed;
 
     public static Material             machine;
 
@@ -62,24 +64,27 @@ public class AdvancedRedstoneCore
 
         machine = new MaterialMachine(MapColor.stoneColor);
 
-        breaker = new BlockBreaker(250, "blockBreaker");
+        breaker = new BlockBreaker(4089, "blockBreaker");
         GameRegistry.registerBlock(breaker, "blockBreaker");
 
-        placer = new BlockPlacer(251, "blockPlacer");
+        placer = new BlockPlacer(4090, "blockPlacer");
         GameRegistry.registerBlock(placer, "blockPlacer");
         GameRegistry.registerTileEntity(TileEntityBlockPlacer.class, "blockPlacer");
 
-        advPiston = new BlockAdvancedPiston(252, "advPiston", false);
+        advPiston = new BlockAdvancedPiston(4091, "advPiston", false);
         GameRegistry.registerBlock(advPiston, "advPiston");
         
-        advPistonSticky = new BlockAdvancedPiston(253, "advPistonSticky", true);
+        advPistonSticky = new BlockAdvancedPiston(4092, "advPistonSticky", true);
         GameRegistry.registerBlock(advPistonSticky, "advPistonSticky");
 
-        advPistonExtension = new BlockAdvancedPistonExtension(254, "advPistonExtension", false);
+        advPistonExtension = new BlockAdvancedPistonExtension(4093, "advPistonExtension", false);
         GameRegistry.registerBlock(advPistonExtension, "advPistonExtension");
 
-        pipeBasic = new BlockPipe(255, "pipeBasic");
+        pipeBasic = new BlockPipe(4094, "pipeBasic");
         GameRegistry.registerBlock(pipeBasic, "pipeBasic");
+        
+        pipeSpeed = new BlockPipeSpeed(4095, "pipeSpeed");
+        GameRegistry.registerBlock(pipeSpeed, "pipeSpeed");
 
         EntityRegistry.registerModEntity(EntityMovingBlock.class, "movingBlock", idBaseEntity + 1, instance, 128, 1, true);
 

@@ -3,7 +3,11 @@ package AdvancedRedstone.TuxCraft.blocks.machines;
 import java.util.ArrayList;
 import java.util.List;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.IBlockAccess;
@@ -26,10 +30,18 @@ public class BlockAdvancedPiston extends BlockSided
     public BlockAdvancedPiston(int id, String s, boolean isSticky)
     {
         super(id, Material.piston, s);
-        this.setCreativeTab(CreativeTabs.tabAllSearch);
+        this.setCreativeTab(CreativeTabs.tabRedstone);
         this.setStepSound(soundStoneFootstep);
         this.setHardness(0.5F);
         this.sticky = isSticky;
+    }
+    
+    @SideOnly(Side.CLIENT)
+    public void registerIcons(IconRegister register)
+    {
+        this.blockIcon = register.registerIcon(AdvancedRedstoneCore.modid + ":" + "advPiston" + "_back");
+        this.frontIcon = register.registerIcon(AdvancedRedstoneCore.modid + ":" + "advPiston" + "_front");
+        this.sideIcon  = register.registerIcon(AdvancedRedstoneCore.modid + ":" + "advPiston" + "_side");
     }
 
     /**

@@ -2,6 +2,7 @@ package AdvancedRedstone.TuxCraft.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -9,6 +10,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntityHopper;
 import net.minecraft.world.World;
 import AdvancedRedstone.TuxCraft.Assets;
 import AdvancedRedstone.TuxCraft.Vector;
@@ -17,11 +19,12 @@ import AdvancedRedstone.TuxCraft.blocks.pipes.IPipe;
 public class EntityPipeItem extends Entity
 {
 
-    public static double speed = 0.1;
-    private ItemStack    stack;
+    public static double baseSpeed = 0.1;
+    private double       speed     = baseSpeed;
     private double       targetX;
     private double       targetY;
     private double       targetZ;
+    private ItemStack    stack;
 
     public EntityPipeItem(World world)
     {
@@ -58,7 +61,6 @@ public class EntityPipeItem extends Entity
 
     public void onUpdate()
     {
-        
         Vector vec = Assets.getEntityVec(this);
 
         if (vec.getBlock() instanceof IPipe)
@@ -75,17 +77,16 @@ public class EntityPipeItem extends Entity
 
                 List<Vector> vecs = this.getPossibleDestinations();
                 Vector destination = getFinalDestination(vecs);
-                
+
                 if (destination == null)
-                {   
-                    Assets.print("nuuuul");
-                    
+                {
+
                     this.ejectItem();
                     this.kill();
-                    
+
                     return;
                 }
-                
+
                 this.targetX = destination.getX() + 0.5;
                 this.targetY = destination.getY() + 0.25;
                 this.targetZ = destination.getZ() + 0.5;
@@ -93,17 +94,24 @@ public class EntityPipeItem extends Entity
 
             pipe.onItemPass(vec, this);
         }
-        
+
         else if (vec.getTile() instanceof IInventory)
         {
             IInventory inv = (IInventory) vec.getTile();
-            
-            if(inv instanceof ISidedInventory)
+            int side = -1;
+
+            if (inv instanceof ISidedInventory)
             {
-                ISidedInventory invSided = (ISidedInventory) inv;
+                side = getSide();
+                Assets.print("sided: " + side);
             }
-            
-            Assets.print("hello");
+
+            if (insertStack(inv, this.stack, side) != null)
+            {
+                this.ejectItem();
+            }
+
+            this.kill();
         }
 
         else
@@ -111,28 +119,147 @@ public class EntityPipeItem extends Entity
             this.ejectItem();
             this.kill();
         }
-        
+
         moveItem();
-        
+
         this.moveEntity(this.motionX, this.motionY, this.motionZ);
+        
+        if(this.speed > baseSpeed)
+        {
+            this.speed -= 0.01;
+        }
+    }
+
+    private int getSide()
+    {
+        Vector tmp = Assets.getEntityVec(this);
+
+        double tmpX = tmp.getX() + 0.5;
+        double tmpY = tmp.getY() + 0.25;
+        double tmpZ = tmp.getZ() + 0.5;
+
+        int side = 1;
+
+        if (this.motionX != 0 && this.posX > tmpX)
+        {
+            side = 5;
+        }
+
+        if (this.motionX != 0 && this.posX < tmpX)
+        {
+            side = 4;
+        }
+
+        if (this.motionY != 0 && this.posY > tmpY)
+        {
+            side = 1;
+        }
+
+        if (this.motionY != 0 && this.posY < tmpY)
+        {
+            side = 0;
+        }
+
+        if (this.motionZ != 0 && this.posZ > tmpZ)
+        {
+            side = 3;
+        }
+
+        if (this.motionZ != 0 && this.posZ < tmpZ)
+        {
+            side = 2;
+        }
+
+        return side;
+    }
+
+    public static ItemStack insertStack(IInventory inv, ItemStack stack, int side)
+    {
+        if (inv instanceof ISidedInventory && side > -1)
+        {
+            ISidedInventory isidedinventory = (ISidedInventory) inv;
+            int[] aint = isidedinventory.getAccessibleSlotsFromSide(side);
+
+            for (int j = 0; j < aint.length && stack != null && stack.stackSize > 0; ++j)
+            {
+                stack = addStackToInventory(inv, stack, aint[j], side);
+            }
+        }
+        else
+        {
+            int k = inv.getSizeInventory();
+
+            for (int l = 0; l < k && stack != null && stack.stackSize > 0; ++l)
+            {
+                stack = addStackToInventory(inv, stack, l, side);
+            }
+        }
+
+        if (stack != null && stack.stackSize == 0)
+        {
+            stack = null;
+        }
+
+        return stack;
+    }
+
+    private static boolean canInsertItemToInventory(IInventory inv, ItemStack stack, int currSlot, int side)
+    {
+        return !inv.isItemValidForSlot(currSlot, stack) ? false : !(inv instanceof ISidedInventory) || ((ISidedInventory) inv).canInsertItem(currSlot, stack, side);
+    }
+
+    private static ItemStack addStackToInventory(IInventory inv, ItemStack stack, int currSlot, int side)
+    {
+        ItemStack itemstack1 = inv.getStackInSlot(currSlot);
+
+        boolean flag = false;
+
+        if (itemstack1 == null)
+        {
+            inv.setInventorySlotContents(currSlot, stack);
+            stack = null;
+            flag = true;
+        }
+
+        if (stack != null)
+        {
+            int k = stack.getMaxStackSize() - itemstack1.stackSize;
+            int l = Math.min(stack.stackSize, k);
+            stack.stackSize -= l;
+            itemstack1.stackSize += l;
+            flag = l > 0;
+        }
+
+        if (flag)
+        {
+            if (inv instanceof TileEntityHopper)
+            {
+                ((TileEntityHopper) inv).setTransferCooldown(8);
+                inv.onInventoryChanged();
+            }
+
+            inv.onInventoryChanged();
+        }
+
+        return stack;
     }
 
     private Vector getFinalDestination(List<Vector> vecs)
     {
         final int size = vecs.size();
-        
-        for(int i = 0; i < size; i++)
+
+        for (int i = 0; i < size; i++)
         {
             Vector tmp = vecs.get(rand.nextInt(vecs.size()));
-            
+
             double tmpX = tmp.getX() + 0.5;
             double tmpY = tmp.getY() + 0.25;
             double tmpZ = tmp.getZ() + 0.5;
-            
+
             boolean xAlign = (int) posX == (int) tmpX;
             boolean yAlign = (int) posY == (int) tmpY;
             boolean zAlign = (int) posZ == (int) tmpZ;
-            
+
             int currDirX = motionX == 0 ? 0 : motionX > 0 ? 1 : -1;
             int newDirX = posX == tmpX ? 0 : tmpX > posX ? 1 : -1;
             int currDirY = motionY == 0 ? 0 : motionY > 0 ? 1 : -1;
@@ -143,21 +270,21 @@ public class EntityPipeItem extends Entity
             boolean flagX = !xAlign && currDirX != 0 && newDirX != 0 && currDirX != newDirX;
             boolean flagY = !yAlign && currDirY != 0 && newDirY != 0 && currDirY != newDirY;
             boolean flagZ = !zAlign && currDirZ != 0 && newDirZ != 0 && currDirZ != newDirZ;
-            
+
             if (flagX || flagY || flagZ)
             {
                 vecs.remove(tmp);
             }
-            
+
             else
             {
                 return tmp;
             }
         }
-        
+
         return null;
     }
-    
+
     private boolean moveItem()
     {
         boolean xAlign = (int) posX == (int) targetX;
@@ -217,10 +344,10 @@ public class EntityPipeItem extends Entity
                 motionZ = speed * newDir;
             }
         }
-        
+
         return true;
     }
-    
+
     private void ejectItem()
     {
         if (!this.worldObj.isRemote && this.stack != null)
@@ -229,7 +356,6 @@ public class EntityPipeItem extends Entity
             this.worldObj.spawnEntityInWorld(entityitem);
         }
 
-        Assets.print("ejecting: " + this.worldObj.isRemote);
         this.kill();
     }
 
@@ -276,6 +402,8 @@ public class EntityPipeItem extends Entity
         nbtTag.setDouble("targetX", this.targetX);
         nbtTag.setDouble("targetY", this.targetY);
         nbtTag.setDouble("targetZ", this.targetZ);
+        
+        nbtTag.setDouble("speed", this.speed);
     }
 
     @Override
@@ -288,12 +416,19 @@ public class EntityPipeItem extends Entity
         this.targetX = nbtTag.getDouble("targetX");
         this.targetY = nbtTag.getDouble("targetY");
         this.targetZ = nbtTag.getDouble("targetZ");
+        
+        this.speed = nbtTag.getDouble("speed");
     }
 
     @Override
     protected void doBlockCollisions()
     {
 
+    }
+
+    public void setSpeed(double d)
+    {
+        this.speed = d;
     }
 
 }

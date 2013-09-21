@@ -1,5 +1,6 @@
 package AdvancedRedstone.TuxCraft.blocks.pipes;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;

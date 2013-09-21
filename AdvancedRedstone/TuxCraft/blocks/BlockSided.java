@@ -109,7 +109,7 @@ public class BlockSided extends ModBlock
     public boolean onBlockActivated(World world, int x, int y, int z,
             EntityPlayer player, int side, float offsetX, float offsetY, float offsetZ)
     {
-        //Assets.print("Meta: " + world.getBlockMetadata(x, y, z) + " Side: " + side);
+        Assets.print("Meta: " + world.getBlockMetadata(x, y, z) + " Side: " + side);
         
         return false;
     }

@@ -18,7 +18,7 @@ public class BlockAdvancedPistonExtension extends BlockSided
     public BlockAdvancedPistonExtension(int id, String s, boolean isSticky)
     {
         super(id, Material.piston, s);
-        this.setCreativeTab(CreativeTabs.tabAllSearch);
+        this.setCreativeTab(null);
         this.setStepSound(soundStoneFootstep);
         this.setHardness(0.5F);
         this.sticky = isSticky;
@@ -28,7 +28,7 @@ public class BlockAdvancedPistonExtension extends BlockSided
     public void registerIcons(IconRegister register)
     {
         this.blockIcon = register.registerIcon(AdvancedRedstoneCore.modid + ":" + "blockBreaker" + "_back");
-        this.frontIcon = register.registerIcon(AdvancedRedstoneCore.modid + ":" + "blockBreaker" + "_front");
+        this.frontIcon = register.registerIcon(AdvancedRedstoneCore.modid + ":" + "advPiston" + "_front");
         this.sideIcon  = register.registerIcon(AdvancedRedstoneCore.modid + ":" + "blockBreaker" + "_side");
     }
 

@@ -133,7 +133,6 @@ public class RenderPipeBasic implements ISimpleBlockRenderingHandler
     @Override
     public int getRenderId()
     {
-        
         return ClientProxy.typePipeBasic;
     }
 
